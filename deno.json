@@ -1,17 +1,13 @@
 {
-  "imports": {
-    "@std/assert": "jsr:@std/assert@^1.0.8",
-    "@std/path": "jsr:@std/path@^1.0.8"
-  },
   "lint": {
     "exclude": [
       "no-explicit-any"
     ]
   },
   "compilerOptions": {
-    "strict": true,
+    "strict": true
   },
-  "name": "@maheshbansod/kysely-codegen",
-  "version": "0.1.1",
+  "name": "@danielegarciav/kysely-codegen",
+  "version": "0.1.0",
   "exports": "./src/index.ts"
 }

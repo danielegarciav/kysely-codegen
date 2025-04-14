@@ -1,6 +1,6 @@
 import { strictEqual } from "node:assert";
 import { readFile } from "node:fs/promises";
-import { join } from "@std/path";
+import { join } from "node:path";
 import { describe, test } from "vitest";
 import { DateParser } from "../../introspector/dialects/postgres/date-parser.ts";
 import { NumericParser } from "../../introspector/dialects/postgres/numeric-parser.ts";

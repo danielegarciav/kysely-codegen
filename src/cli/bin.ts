@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-import { Cli } from "./cli.ts";
+import { Cli } from './cli.ts';
 
-const args = Deno.args.slice(2);
+const args = process.argv.slice(2);
 
-void new Cli().run(args).then(() => Deno.exit(0));
+void new Cli().run(args).then(() => process.exit(0));

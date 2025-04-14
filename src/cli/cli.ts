@@ -195,7 +195,7 @@ export class Cli {
         "\n",
       ),
     );
-    Deno.exit(0);
+    process.exit(0);
   }
 
   parseOptions(args: string[], options?: { silent?: boolean }): CliOptions {
@@ -302,7 +302,7 @@ export class Cli {
             throw error;
           } else {
             console.error(new Logger().serializeError(error.message));
-            Deno.exit(0);
+            process.exit(0);
           }
         } else {
           throw error;

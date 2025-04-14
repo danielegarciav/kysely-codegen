@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import type { Kysely } from "kysely";
-import { parse, relative, SEPARATOR } from "@std/path";
+import { parse, relative, sep as SEPARATOR } from "node:path";
 import { performance } from "node:perf_hooks";
 import type { GeneratorDialect } from "../dialect.ts";
 import type { Logger } from "../logger/logger.ts";
@@ -75,7 +75,7 @@ export const generate = async (options: GenerateOptions): Promise<string> => {
   const data = serializer.serializeFile(nodes);
 
   const relativeOutDir = options.outFile
-    ? `.${sep}${relative(Deno.cwd(), options.outFile)}`
+    ? `.${sep}${relative(process.cwd(), options.outFile)}`
     : null;
 
   if (options.print) {

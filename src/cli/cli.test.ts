@@ -1,6 +1,6 @@
 import { deepStrictEqual } from "node:assert";
 import { execa } from "execa";
-import { join } from "@std/path";
+import { join } from "node:path";
 import { describe, it } from "vitest";
 import packageJson from "../../package.json" with { type: "json" };
 import { LogLevel } from "../generator/logger/log-level.ts";
@@ -45,7 +45,7 @@ describe(Cli.name, () => {
 
   it("should be able to start the CLI", async () => {
     await execa`pnpm build`;
-    const binPath = join(Deno.cwd(), packageJson.bin["kysely-codegen"]);
+    const binPath = join(process.cwd(), packageJson.bin["kysely-codegen"]);
     const output = await execa`node ${binPath} --help`.then((a) => a.stdout);
     deepStrictEqual(output.includes("--help, -h"), true);
   });
