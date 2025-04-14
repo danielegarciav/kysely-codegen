@@ -93,7 +93,7 @@ export class ConnectionStringParser {
 
       options.logger?.info(`Loaded environment variables from '${envFile}'.`);
 
-      const envConnectionString = Deno.env.get(key);
+      const envConnectionString = process.env[key];
       if (!envConnectionString) {
         throw new ReferenceError(
           `Environment variable '${key}' could not be found.`,

@@ -1,10 +1,12 @@
 
 
 > [!NOTE]  
-> This is a fork of the original [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen). It is recommended to try it out first.
+> **This is a fork of a fork.** This is a fork of [@maheshbansod/kysely-codegen](https://github.com/maheshbansod/kysely-codegen)
+which is in turn a fork of the original [kysely-codegen](https://github.com/RobinBlomberg/kysely-codegen).
 
-This fork of kysely-codegen is the same code but (almost) everything made Deno compatible.  
-I made this to support postgresql on kysely-codegen.
+The fork from `maheshbansod` adds support for custom kysely dialects, and also replaces Node API
+usage with Deno APIs. I wanted support for custom dialects but I also need this library to be
+supported by Node compatible runtimes (Node, Deno 2.0+, Bun). This fork also updates Kysely to 0.28.0.
 
 This fork accepts a custom kysely dialect which can be used directly instead of using a built-in dialect.
 
