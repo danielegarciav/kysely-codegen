@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { inspect } from 'util';
+import { inspect } from 'node:util';
 import type { LogLevel } from './log-level';
 import { matchLogLevel } from './log-level';
 
