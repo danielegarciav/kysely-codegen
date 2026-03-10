@@ -7,5 +7,5 @@
   },
   "name": "@danielegarciav/kysely-codegen",
   "version": "0.20.1",
-  "exports": "./src/index.ts"
+  "exports": "./src/jsr.ts"
 }

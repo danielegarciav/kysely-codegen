@@ -11,21 +11,21 @@ export class EnumCollection {
     );
   }
 
-  add(key: string, value: string) {
+  add(key: string, value: string): void {
     (this.enums[key.toLowerCase()] ??= []).push(value);
   }
 
-  get(key: string) {
+  get(key: string): string[] | null {
     return (
       this.enums[key.toLowerCase()]?.sort((a, b) => a.localeCompare(b)) ?? null
     );
   }
 
-  has(key: string) {
+  has(key: string): boolean {
     return !!this.enums[key.toLowerCase()];
   }
 
-  set(key: string, values: string[]) {
+  set(key: string, values: string[]): void {
     this.enums[key.toLowerCase()] = values;
   }
 }

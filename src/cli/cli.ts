@@ -35,7 +35,7 @@ const compact = <T extends Record<string, unknown>>(object: T) => {
 export class Cli {
   logLevel = DEFAULT_LOG_LEVEL;
 
-  async generate(options: Config) {
+  async generate(options: Config): Promise<string> {
     const connectionStringParser = new ConnectionStringParser();
     const logger = options.logger ?? new Logger(options.logLevel);
 
@@ -289,7 +289,10 @@ export class Cli {
     return generateOptions;
   }
 
-  async run(options?: { argv?: string[]; config?: Record<string, unknown> }) {
+  async run(options?: {
+    argv?: string[];
+    config?: Record<string, unknown>;
+  }): Promise<string> {
     const generateOptions = this.parseOptions(options?.argv ?? [], {
       config: options?.config,
     });

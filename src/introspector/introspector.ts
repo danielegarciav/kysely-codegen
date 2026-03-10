@@ -21,11 +21,11 @@ export type IntrospectOptions<DB> = {
  * Analyzes and returns metadata for a connected database.
  */
 export abstract class Introspector<DB> {
-  private async establishDatabaseConnection(db: Kysely<DB>) {
-    return await sql`SELECT 1;`.execute(db);
+  private async establishDatabaseConnection(db: Kysely<DB>): Promise<void> {
+    await sql`SELECT 1;`.execute(db);
   }
 
-  async connect(options: ConnectOptions) {
+  async connect(options: ConnectOptions): Promise<Kysely<DB>> {
     // Insane solution in lieu of a better one.
     // We'll create a database connection with SSL, and if it complains about SSL, try without it.
     for (const ssl of [true, false]) {
@@ -56,7 +56,9 @@ export abstract class Introspector<DB> {
     throw new Error('Failed to connect to database.');
   }
 
-  protected async getTables(options: IntrospectOptions<DB>) {
+  protected async getTables(
+    options: IntrospectOptions<DB>,
+  ): Promise<Awaited<ReturnType<Kysely<DB>['introspection']['getTables']>>> {
     let tables = await options.db.introspection.getTables();
 
     if (options.includePattern) {

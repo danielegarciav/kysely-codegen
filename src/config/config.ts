@@ -284,14 +284,7 @@ export type Config<DB = any> = {
 
 export type CustomImports = Record<string, string>;
 
-export type DialectName = z.infer<typeof dialectNameSchema>;
-
-type LoadConfigResult = {
-  config: unknown;
-  filepath: string;
-};
-
-export const dialectNameSchema = z.enum([
+const DIALECT_NAMES = [
   'bun-sqlite',
   'kysely-bun-sqlite',
   'libsql',
@@ -300,7 +293,17 @@ export const dialectNameSchema = z.enum([
   'postgres',
   'sqlite',
   'worker-bun-sqlite',
-]);
+] as const;
+
+export type DialectName = (typeof DIALECT_NAMES)[number];
+
+type LoadConfigResult = {
+  config: unknown;
+  filepath: string;
+};
+
+export const dialectNameSchema: z.ZodType<DialectName> =
+  z.enum(DIALECT_NAMES);
 
 const expressionNodeSchema = z.union([
   z.instanceof(ArrayExpressionNode),
