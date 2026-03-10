@@ -2,6 +2,7 @@
   "lint": {
     "exclude": ["no-explicit-any"]
   },
+  "lock": false,
   "compilerOptions": {
     "strict": true
   },

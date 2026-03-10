@@ -18,8 +18,5 @@ jobs:
         with:
           deno-version: v2.x
 
-      - name: Install deps
-        run: deno install
-
       - name: Publish package
         run: deno publish --sloppy-imports
