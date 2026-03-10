@@ -1,13 +1,11 @@
 {
   "lint": {
-    "exclude": [
-      "no-explicit-any"
-    ]
+    "exclude": ["no-explicit-any"]
   },
   "compilerOptions": {
     "strict": true
   },
   "name": "@danielegarciav/kysely-codegen",
-  "version": "0.1.0",
+  "version": "0.20.1",
   "exports": "./src/index.ts"
 }
