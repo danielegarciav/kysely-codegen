@@ -1,4 +1,5 @@
 import { cosmiconfigSync } from 'cosmiconfig';
+import type { Dialect } from 'kysely';
 import { z } from 'zod';
 import { ArrayExpressionNode } from '../generator/ast/array-expression-node';
 import { ExtendsClauseNode } from '../generator/ast/extends-clause-node';
@@ -39,6 +40,10 @@ export type Config<DB = any> = {
    * ```
    */
   customImports?: CustomImports;
+  /**
+   * Supply a custom Kysely dialect instance directly.
+   */
+  customKyselyDialect?: Dialect;
   /**
    * Specify which parser to use for PostgreSQL date values.
    *
@@ -317,6 +322,7 @@ const overridesSchema = z
 
 export const configSchema = z.object({
   camelCase: z.boolean().optional(),
+  customKyselyDialect: z.custom<Dialect>().optional(),
   customImports: z.record(z.string(), z.string()).optional(),
   dateParser: z.enum<DateParser[]>(['string', 'timestamp']).optional(),
   defaultSchemas: z.array(z.string()).optional(),

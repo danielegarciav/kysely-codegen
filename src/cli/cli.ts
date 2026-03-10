@@ -66,6 +66,7 @@ export class Cli {
 
     const db = await dialect.introspector.connect({
       connectionString,
+      customKyselyDialect: options.customKyselyDialect,
       dialect,
     });
 

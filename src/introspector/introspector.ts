@@ -1,3 +1,4 @@
+import type { Dialect } from 'kysely';
 import { Kysely, sql } from 'kysely';
 import type { IntrospectorDialect } from './dialect';
 import type { DatabaseMetadata } from './metadata/database-metadata';
@@ -5,6 +6,7 @@ import { TableMatcher } from './table-matcher';
 
 type ConnectOptions = {
   connectionString: string;
+  customKyselyDialect?: Dialect;
   dialect: IntrospectorDialect;
 };
 
@@ -28,10 +30,12 @@ export abstract class Introspector<DB> {
     // We'll create a database connection with SSL, and if it complains about SSL, try without it.
     for (const ssl of [true, false]) {
       try {
-        const dialect = await options.dialect.createKyselyDialect({
-          connectionString: options.connectionString,
-          ssl,
-        });
+        const dialect =
+          options.customKyselyDialect ??
+          (await options.dialect.createKyselyDialect({
+            connectionString: options.connectionString,
+            ssl,
+          }));
 
         const db = new Kysely<DB>({ dialect });
 

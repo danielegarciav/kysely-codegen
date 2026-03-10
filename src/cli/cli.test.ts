@@ -431,6 +431,16 @@ describe(Cli.name, () => {
     assert(['--verify'], { verify: true });
     assert(['--verify=false'], { verify: false });
     assert(['--verify=true'], { verify: true });
+
+    const customDialect = {};
+    const customDialectOptions = new Cli().parseOptions([], {
+      config: {
+        customKyselyDialect: customDialect,
+      },
+      silent: true,
+    });
+
+    deepStrictEqual(customDialectOptions.customKyselyDialect, customDialect);
   });
 
   it('should generate types for materialized views', async () => {
