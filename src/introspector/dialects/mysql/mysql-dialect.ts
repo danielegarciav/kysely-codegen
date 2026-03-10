@@ -12,7 +12,7 @@ export class MysqlIntrospectorDialect extends IntrospectorDialect {
     return new KyselyMysqlDialect({
       pool: createPool({
         uri: options.connectionString,
-      }),
+      }) as unknown as ConstructorParameters<typeof KyselyMysqlDialect>[0]['pool'],
     });
   }
 }

@@ -6,7 +6,7 @@ export class KyselyBunSqliteIntrospectorDialect extends IntrospectorDialect {
   override readonly introspector = new KyselyBunSqliteIntrospector();
 
   async createKyselyDialect(options: CreateKyselyDialectOptions) {
-    if (typeof Bun === 'undefined') {
+    if (!('Bun' in globalThis)) {
       throw new ReferenceError(
         "Dialect 'kysely-bun-sqlite' is only available in a Bun environment.",
       );
