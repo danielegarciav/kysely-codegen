@@ -1,10 +1,10 @@
+import { DEFAULT_OUT_FILE } from '../generator/constants';
 import {
-  DEFAULT_OUT_FILE,
   DEFAULT_RUNTIME_ENUMS_STYLE,
   DEFAULT_URL,
   LOG_LEVEL_NAMES,
   VALID_DIALECTS,
-} from "./constants.ts";
+} from './constants';
 
 type Flag = {
   default?: string;
@@ -18,116 +18,127 @@ type Flag = {
 
 export const FLAGS = [
   {
-    description: "Use the Kysely CamelCasePlugin.",
-    longName: "camel-case",
+    description: 'Use the Kysely CamelCasePlugin.',
+    longName: 'camel-case',
   },
   {
-    default: "timestamp",
-    description: "Specify which parser to use for PostgreSQL date values.",
-    longName: "date-parser",
-    values: ["string", "timestamp"],
+    description: 'Specify the path to the configuration file to use.',
+    longName: 'config-file',
   },
   {
-    description: "Set the SQL dialect.",
-    longName: "dialect",
+    description:
+      'Specify custom type imports, in JSON format. Use # for named imports.',
+    example:
+      '{"InstantRange":"./custom-types","MyType":"./types#OriginalType"}',
+    longName: 'custom-imports',
+  },
+  {
+    default: 'timestamp',
+    description: 'Specify which parser to use for PostgreSQL date values.',
+    longName: 'date-parser',
+    values: ['string', 'timestamp'],
+  },
+  {
+    description: 'Set the default schema(s) for the database connection.',
+    longName: 'default-schema',
+  },
+  {
+    description: 'Explicitly set the SQL dialect.',
+    longName: 'dialect',
     values: VALID_DIALECTS,
   },
   {
-    description: "Specify the path to an environment file to use.",
-    longName: "env-file",
+    description: 'Specify the path to an environment file to use.',
+    longName: 'env-file',
   },
   {
-    description: "Exclude tables matching the specified glob pattern.",
-    examples: ["users", "*.table", "secrets.*", "*._*"],
-    longName: "exclude-pattern",
+    description: 'Exclude tables that match the specified glob pattern.',
+    examples: ['users', '*.table', 'secrets.*', '*._*'],
+    longName: 'exclude-pattern',
   },
   {
-    description: "Print this message.",
-    longName: "help",
-    shortName: "h",
+    description: 'Print this message.',
+    longName: 'help',
+    shortName: 'h',
   },
   {
-    description: "Only include tables matching the specified glob pattern.",
-    examples: ["users", "*.table", "secrets.*", "*._*"],
-    longName: "include-pattern",
+    description: 'Only include tables that match the specified glob pattern.',
+    examples: ['users', '*.table', 'secrets.*', '*._*'],
+    longName: 'include-pattern',
   },
   {
-    default: "warn",
-    description: "Set the terminal log level.",
-    longName: "log-level",
+    default: 'warn',
+    description: 'Set the terminal log level.',
+    longName: 'log-level',
     values: LOG_LEVEL_NAMES,
   },
   {
-    description: "Skip generating types for PostgreSQL domains.",
-    longName: "no-domains",
+    description: 'Skip generating types for PostgreSQL domains.',
+    longName: 'no-domains',
   },
   {
-    default: "string",
-    description: "Specify which parser to use for PostgreSQL numeric values.",
-    longName: "numeric-parser",
-    values: ["string", "number", "number-or-string"],
+    default: 'string',
+    description: 'Specify which parser to use for PostgreSQL numeric values.',
+    longName: 'numeric-parser',
+    values: ['string', 'number', 'number-or-string'],
   },
   {
     default: DEFAULT_OUT_FILE,
-    description: "Set the file build path.",
-    longName: "out-file",
+    description: 'Set the file build path.',
+    longName: 'out-file',
   },
   {
     description:
-      "Specify type overrides for specific table columns, in JSON format.",
+      'Specify type overrides for specific table columns, in JSON format.',
     example: '{"columns":{"table_name.column_name":"{foo:\\"bar\\"}"}}',
-    longName: "overrides",
+    longName: 'overrides',
   },
   {
     description:
-      "Include partitions of PostgreSQL tables in the generated code.",
-    longName: "partitions",
+      'Include partitions of PostgreSQL tables in the generated code.',
+    longName: 'partitions',
   },
   {
     description:
-      "Print the generated output to the terminal instead of a file.",
-    longName: "print",
-  },
-  {
-    description:
-      "Generate runtime enums instead of string unions for PostgreSQL enums.",
-    longName: "runtime-enums",
+      'Print the generated output to the terminal instead of a file.',
+    longName: 'print',
   },
   {
     default: DEFAULT_RUNTIME_ENUMS_STYLE,
     description:
-      "Which naming convention to use for runtime enum keys. Only works with `--runtime-enums`.",
-    longName: "runtime-enums-style",
-    values: ["pascal-case", "screaming-snake-case"],
-  },
-  {
-    description: "Set the default schema(s) for the database connection.",
-    longName: "schema",
+      'Generate runtime enums instead of string unions for PostgreSQL enums.',
+    longName: 'runtime-enums',
+    values: ['pascal-case', 'screaming-snake-case'],
   },
   {
     description:
-      "Singularize generated table names, e.g. `BlogPost` instead of `BlogPosts`.",
-    longName: "singular",
+      'Singularize generated table names, e.g. `BlogPost` instead of `BlogPosts`.',
+    longName: 'singularize',
   },
   {
-    default: "true",
+    description: 'Specify type mappings for database types, in JSON format.',
+    example: '{"timestamptz":"Temporal.Instant","tstzrange":"InstantRange"}',
+    longName: 'type-mapping',
+  },
+  {
+    default: 'true',
     description:
-      "Generate code using the TypeScript 3.8+ `import type` syntax.",
-    longName: "type-only-imports",
+      'Generate code using the TypeScript 3.8+ `import type` syntax.',
+    longName: 'type-only-imports',
   },
   {
     default: DEFAULT_URL,
     description:
-      "Set the database connection string URL. This may point to an environment variable.",
-    longName: "url",
+      'Set the database connection string URL. This may point to an environment variable.',
+    longName: 'url',
   },
   {
-    description: "Verify that the generated types are up-to-date.",
-    longName: "verify",
+    description: 'Verify that the generated types are up-to-date.',
+    longName: 'verify',
   },
 ];
 
-export const serializeFlags = (flags: Flag[]): string => {
+export const serializeFlags = (flags: Flag[]) => {
   const lines: { fullDescription: string; line: string }[] = [];
   const sortedFlags = flags.sort((a, b) => {
     return a.longName.localeCompare(b.longName);
@@ -148,14 +159,14 @@ export const serializeFlags = (flags: Flag[]): string => {
     let fullDescription = flag.description;
 
     const notes = [
-      ...(flag.values ? [`values: [${flag.values.join(", ")}]`] : []),
+      ...(flag.values ? [`values: [${flag.values.join(', ')}]`] : []),
       ...(flag.default ? [`default: ${flag.default}`] : []),
       ...(flag.example ? [`example: ${flag.example}`] : []),
-      ...(flag.examples ? [`examples: ${flag.examples.join(", ")}`] : []),
+      ...(flag.examples ? [`examples: ${flag.examples.join(', ')}`] : []),
     ];
 
     if (notes.length > 0) {
-      fullDescription += ` (${notes.join(", ")})`;
+      fullDescription += ` (${notes.join(', ')})`;
     }
 
     lines.push({ fullDescription, line });
@@ -163,8 +174,8 @@ export const serializeFlags = (flags: Flag[]): string => {
 
   return lines
     .map(({ fullDescription, line }) => {
-      const padding = " ".repeat(maxLineLength - line.length + 2);
+      const padding = ' '.repeat(maxLineLength - line.length + 2);
       return `${line}${padding}${fullDescription}`;
     })
-    .join("\n");
+    .join('\n');
 };

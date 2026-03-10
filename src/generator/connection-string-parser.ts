@@ -1,7 +1,7 @@
-import { config as loadEnv } from "dotenv";
-import { expand as expandEnv } from "dotenv-expand";
-import type { DialectName } from "./dialect-manager.ts";
-import type { Logger } from "./logger/logger.ts";
+import { config as loadEnv } from 'dotenv';
+import { expand as expandEnv } from 'dotenv-expand';
+import type { DialectName } from '../config/config';
+import type { Logger } from './logger/logger';
 
 const CALL_STATEMENT_REGEXP = /^\s*([a-z]+)\s*\(\s*(.*)\s*\)\s*$/;
 const DIALECT_PARTS_REGEXP = /([^:]*)(.*)/;
@@ -11,14 +11,14 @@ const DIALECT_PARTS_REGEXP = /([^:]*)(.*)/;
  */
 type ParseConnectionStringOptions = {
   connectionString: string;
-  dialectName?: DialectName;
-  envFile?: string;
+  dialect?: DialectName | null;
+  envFile?: string | null;
   logger?: Logger;
 };
 
 type ParsedConnectionString = {
   connectionString: string;
-  inferredDialectName: DialectName;
+  dialect: DialectName;
 };
 
 /**
@@ -27,26 +27,26 @@ type ParsedConnectionString = {
  */
 export class ConnectionStringParser {
   #inferDialectName(connectionString: string): DialectName {
-    if (connectionString.startsWith("libsql")) {
-      return "libsql";
+    if (connectionString.startsWith('libsql')) {
+      return 'libsql';
     }
 
-    if (connectionString.startsWith("mysql")) {
-      return "mysql";
+    if (connectionString.startsWith('mysql')) {
+      return 'mysql';
     }
 
     if (
-      connectionString.startsWith("postgres") ||
-      connectionString.startsWith("pg")
+      connectionString.startsWith('postgres') ||
+      connectionString.startsWith('pg')
     ) {
-      return "postgres";
+      return 'postgres';
     }
 
-    if (connectionString.toLowerCase().includes("user id=")) {
-      return "mssql";
+    if (connectionString.toLowerCase().includes('user id=')) {
+      return 'mssql';
     }
 
-    return "sqlite";
+    return 'sqlite';
   }
 
   parse(options: ParseConnectionStringOptions): ParsedConnectionString {
@@ -57,7 +57,7 @@ export class ConnectionStringParser {
     if (expressionMatch) {
       const name = expressionMatch[1]!;
 
-      if (name !== "env") {
+      if (name !== 'env') {
         throw new ReferenceError(`Function '${name}' is not defined.`);
       }
 
@@ -72,28 +72,41 @@ export class ConnectionStringParser {
         );
       }
 
-      if (typeof key !== "string") {
+      if (typeof key !== 'string') {
         throw new TypeError(
           `Argument 0 of function '${name}' must be a string.`,
         );
       }
 
-      const { error } = expandEnv(loadEnv({ path: options.envFile }));
-      const envFile = options.envFile ?? ".env";
+      const { error } = expandEnv(
+        loadEnv({ path: options.envFile ?? undefined, quiet: true }),
+      );
+      const displayEnvFile = options.envFile ?? '.env';
 
       if (error) {
-        if (error.name === "ENOENT") {
-          throw new ReferenceError(
-            `Environment file '${envFile}' could not be found. Use --env-file to specify a different file.`,
-          );
+        if (
+          'code' in error &&
+          typeof error.code === 'string' &&
+          error.code === 'ENOENT'
+        ) {
+          if (options.envFile != null) {
+            throw new ReferenceError(
+              `Could not resolve connection string '${connectionString}'. ` +
+                `Environment file '${displayEnvFile}' could not be found. ` +
+                "Use '--env-file' to specify a different file.",
+            );
+          }
+        } else {
+          throw error;
         }
-
-        throw error;
+      } else {
+        options.logger?.info(
+          `Loaded environment variables from '${displayEnvFile}'.`,
+        );
       }
 
-      options.logger?.info(`Loaded environment variables from '${envFile}'.`);
-
       const envConnectionString = process.env[key];
+
       if (!envConnectionString) {
         throw new ReferenceError(
           `Environment variable '${key}' could not be found.`,
@@ -106,16 +119,19 @@ export class ConnectionStringParser {
     const parts = connectionString.match(DIALECT_PARTS_REGEXP)!;
     const protocol = parts[1]!;
     const tail = parts[2]!;
-    const normalizedConnectionString = protocol === "pg"
-      ? `postgres${tail}`
-      : connectionString;
+    const normalizedConnectionString =
+      protocol === 'pg'
+        ? `postgres${tail}`
+        : protocol === 'sqlite'
+          ? tail.replace(/^:\/\//, '')
+          : connectionString;
 
-    const inferredDialectName = options.dialectName ??
-      this.#inferDialectName(connectionString);
+    const dialect =
+      options.dialect ?? this.#inferDialectName(normalizedConnectionString);
 
     return {
       connectionString: normalizedConnectionString,
-      inferredDialectName,
+      dialect,
     };
   }
 }

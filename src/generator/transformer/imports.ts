@@ -1,9 +1,6 @@
-import { ModuleReferenceNode } from "../ast/module-reference-node.ts";
+import { ModuleReferenceNode } from '../ast/module-reference-node';
 
-export const GLOBAL_IMPORTS: {
-  ColumnType: ModuleReferenceNode;
-  JSONColumnType: ModuleReferenceNode;
-} = {
-  ColumnType: new ModuleReferenceNode("kysely"),
-  JSONColumnType: new ModuleReferenceNode("kysely"),
+export const GLOBAL_IMPORTS = {
+  ColumnType: new ModuleReferenceNode('kysely'),
+  JSONColumnType: new ModuleReferenceNode('kysely'),
 };

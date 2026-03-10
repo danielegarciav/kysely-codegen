@@ -1,9 +1,11 @@
-import { PostgresDialect as KyselyPostgresDialect } from "kysely";
-import type { CreateKyselyDialectOptions } from "../../dialect.ts";
-import { IntrospectorDialect } from "../../dialect.ts";
-import { DateParser, DEFAULT_DATE_PARSER } from "./date-parser.ts";
-import { DEFAULT_NUMERIC_PARSER, NumericParser } from "./numeric-parser.ts";
-import { PostgresIntrospector } from "./postgres-introspector.ts";
+import { PostgresDialect as KyselyPostgresDialect } from 'kysely';
+import type { CreateKyselyDialectOptions } from '../../dialect';
+import { IntrospectorDialect } from '../../dialect';
+import type { DateParser } from './date-parser';
+import { DEFAULT_DATE_PARSER } from './date-parser';
+import type { NumericParser } from './numeric-parser';
+import { DEFAULT_NUMERIC_PARSER } from './numeric-parser';
+import { PostgresIntrospector } from './postgres-introspector';
 
 type PostgresDialectOptions = {
   dateParser?: DateParser;
@@ -33,20 +35,20 @@ export class PostgresIntrospectorDialect extends IntrospectorDialect {
     };
   }
 
-  async createKyselyDialect(options: CreateKyselyDialectOptions): Promise<KyselyPostgresDialect> {
-    const { default: pg } = await import("pg");
+  async createKyselyDialect(options: CreateKyselyDialectOptions) {
+    const { default: pg } = await import('pg');
 
-    if (this.options.dateParser === DateParser.STRING) {
+    if (this.options.dateParser === 'string') {
       pg.types.setTypeParser(1082, (date) => date);
     }
 
-    if (this.options.numericParser === NumericParser.NUMBER) {
+    if (this.options.numericParser === 'number') {
       pg.types.setTypeParser(1700, Number);
-    } else if (this.options.numericParser === NumericParser.NUMBER_OR_STRING) {
+    } else if (this.options.numericParser === 'number-or-string') {
       pg.types.setTypeParser(1700, (value) => {
         const number = Number(value);
         return number > Number.MAX_SAFE_INTEGER ||
-            number < Number.MIN_SAFE_INTEGER
+          number < Number.MIN_SAFE_INTEGER
           ? value
           : number;
       });

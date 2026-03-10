@@ -15,13 +15,13 @@ export class EnumCollection {
     (this.enums[key.toLowerCase()] ??= []).push(value);
   }
 
-  get(key: string): string[] | null {
+  get(key: string) {
     return (
       this.enums[key.toLowerCase()]?.sort((a, b) => a.localeCompare(b)) ?? null
     );
   }
 
-  has(key: string): boolean {
+  has(key: string) {
     return !!this.enums[key.toLowerCase()];
   }
 

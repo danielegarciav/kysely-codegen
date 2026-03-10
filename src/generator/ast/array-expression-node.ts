@@ -1,8 +1,7 @@
-import type { ExpressionNode } from "./expression-node.ts";
-import { NodeType } from "./node-type.ts";
+import type { ExpressionNode } from './expression-node';
 
 export class ArrayExpressionNode {
-  readonly type = NodeType.ARRAY_EXPRESSION;
+  readonly type = 'ArrayExpression';
   readonly values: ExpressionNode;
 
   constructor(values: ExpressionNode) {

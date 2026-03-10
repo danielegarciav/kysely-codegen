@@ -1,8 +1,10 @@
-import { SqliteIntrospectorDialect } from "../../../introspector/dialects/sqlite/sqlite-dialect.ts";
-import type { GeneratorDialect } from "../../dialect.ts";
-import { SqliteAdapter } from "../sqlite/sqlite-adapter.ts";
+import { SqliteIntrospectorDialect } from '../../../introspector/dialects/sqlite/sqlite-dialect';
+import type { GeneratorDialect } from '../../dialect';
+import { SqliteAdapter } from '../sqlite/sqlite-adapter';
 
-export class WorkerBunSqliteDialect extends SqliteIntrospectorDialect
-  implements GeneratorDialect {
-  readonly adapter: SqliteAdapter = new SqliteAdapter();
+export class WorkerBunSqliteDialect
+  extends SqliteIntrospectorDialect
+  implements GeneratorDialect
+{
+  readonly adapter = new SqliteAdapter();
 }

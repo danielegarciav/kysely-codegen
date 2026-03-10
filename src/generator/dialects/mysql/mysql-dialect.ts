@@ -1,8 +1,10 @@
-import { MysqlIntrospectorDialect } from "../../../introspector/dialects/mysql/mysql-dialect.ts";
-import type { GeneratorDialect } from "../../dialect.ts";
-import { MysqlAdapter } from "./mysql-adapter.ts";
+import { MysqlIntrospectorDialect } from '../../../introspector/dialects/mysql/mysql-dialect';
+import type { GeneratorDialect } from '../../dialect';
+import { MysqlAdapter } from './mysql-adapter';
 
-export class MysqlDialect extends MysqlIntrospectorDialect
-  implements GeneratorDialect {
-  readonly adapter: MysqlAdapter = new MysqlAdapter();
+export class MysqlDialect
+  extends MysqlIntrospectorDialect
+  implements GeneratorDialect
+{
+  readonly adapter = new MysqlAdapter();
 }

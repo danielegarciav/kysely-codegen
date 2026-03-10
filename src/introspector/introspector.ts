@@ -1,18 +1,17 @@
-import { type Dialect, type TableMetadata, Kysely, sql } from "kysely";
-import type { IntrospectorDialect } from "./dialect.ts";
-import type { DatabaseMetadata } from "./metadata/database-metadata.ts";
-import { TableMatcher } from "./table-matcher.ts";
+import { Kysely, sql } from 'kysely';
+import type { IntrospectorDialect } from './dialect';
+import type { DatabaseMetadata } from './metadata/database-metadata';
+import { TableMatcher } from './table-matcher';
 
 type ConnectOptions = {
   connectionString: string;
   dialect: IntrospectorDialect;
-  customKyselyDialect?: Dialect;
 };
 
 export type IntrospectOptions<DB> = {
   db: Kysely<DB>;
-  excludePattern?: string;
-  includePattern?: string;
+  excludePattern?: string | null;
+  includePattern?: string | null;
   partitions?: boolean;
 };
 
@@ -24,16 +23,15 @@ export abstract class Introspector<DB> {
     return await sql`SELECT 1;`.execute(db);
   }
 
-  async connect(options: ConnectOptions): Promise<Kysely<DB>> {
+  async connect(options: ConnectOptions) {
     // Insane solution in lieu of a better one.
     // We'll create a database connection with SSL, and if it complains about SSL, try without it.
     for (const ssl of [true, false]) {
       try {
-        const dialect = options.customKyselyDialect ??
-          await options.dialect.createKyselyDialect({
-            connectionString: options.connectionString,
-            ssl,
-          });
+        const dialect = await options.dialect.createKyselyDialect({
+          connectionString: options.connectionString,
+          ssl,
+        });
 
         const db = new Kysely<DB>({ dialect });
 
@@ -41,8 +39,8 @@ export abstract class Introspector<DB> {
 
         return db;
       } catch (error) {
-        const isSslError = error instanceof Error &&
-          /\bSSL\b/.test(error.message);
+        const isSslError =
+          error instanceof Error && /\bSSL\b/.test(error.message);
         const isUnexpectedError = !ssl || !isSslError;
 
         if (isUnexpectedError) {
@@ -51,16 +49,16 @@ export abstract class Introspector<DB> {
       }
     }
 
-    throw new Error("Failed to connect to database.");
+    throw new Error('Failed to connect to database.');
   }
 
-  protected async getTables(options: IntrospectOptions<DB>): Promise<TableMetadata[]> {
+  protected async getTables(options: IntrospectOptions<DB>) {
     let tables = await options.db.introspection.getTables();
 
     if (options.includePattern) {
       const tableMatcher = new TableMatcher(options.includePattern);
       tables = tables.filter(({ name, schema }) =>
-        tableMatcher.match(schema, name)
+        tableMatcher.match(schema, name),
       );
     }
 

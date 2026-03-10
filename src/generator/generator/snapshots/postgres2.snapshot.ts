@@ -16,7 +16,8 @@ export enum TestStatus {
   GHI_JKL = "GHI_JKL",
 }
 
-export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[] ? U[]
+export type ArrayType<T> = ArrayTypeImpl<T> extends (infer U)[]
+  ? U[]
   : ArrayTypeImpl<T>;
 
 export type ArrayTypeImpl<T> = T extends ColumnType<infer S, infer I, infer U>
@@ -27,11 +28,7 @@ export type Generated<T> = T extends ColumnType<infer S, infer I, infer U>
   ? ColumnType<S, I | undefined, U>
   : ColumnType<T, T | undefined, T>;
 
-export type Interval = ColumnType<
-  IPostgresInterval,
-  IPostgresInterval | number | string,
-  IPostgresInterval | number | string
->;
+export type Interval = ColumnType<IPostgresInterval, IPostgresInterval | number | string, IPostgresInterval | number | string>;
 
 export type Json = JsonValue;
 
@@ -49,12 +46,17 @@ export type Numeric = ColumnType<number | string>;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface Enum {
+  name: string;
+}
+
 export interface FooBar {
   array: string[] | null;
   childDomain: number | null;
   date: string | null;
   defaultedNullablePosInt: Generated<number | null>;
   defaultedRequiredPosInt: Generated<number>;
+  enum: string;
   /**
    * This is a comment on a column.
    *
@@ -65,11 +67,11 @@ export interface FooBar {
   interval1: Interval | null;
   interval2: Interval | null;
   json: Json | null;
-  jsonTyped: JSONColumnType<{ foo: "bar" }>;
+  jsonTyped: JSONColumnType<{ foo: "bar" }> | null;
   nullablePosInt: number | null;
   numeric1: Numeric | null;
   numeric2: Numeric | null;
-  overridden: "OVERRIDDEN";
+  overridden: "OVERRIDDEN" | null;
   testDomainIsBool: boolean | null;
   timestamps: ArrayType<Timestamp> | null;
   true: boolean;
@@ -77,11 +79,19 @@ export interface FooBar {
   userStatus2: TestStatus | null;
 }
 
+export interface FooBarMv {
+  false: boolean | null;
+  id: number | null;
+  true: boolean | null;
+}
+
 export interface PartitionedTable {
   id: Generated<number>;
 }
 
 export interface DB {
+  enum: Enum;
   fooBar: FooBar;
+  fooBarMv: FooBarMv;
   partitionedTable: PartitionedTable;
 }

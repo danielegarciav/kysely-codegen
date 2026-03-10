@@ -1,29 +1,30 @@
 import type {
-  ColumnMetadata as KyselyColumnMetaData,
   Kysely,
+  ColumnMetadata as KyselyColumnMetaData,
   TableMetadata as KyselyTableMetadata,
-} from "kysely";
-import { sql } from "kysely";
-import { EnumCollection } from "../../enum-collection.ts";
-import type { IntrospectOptions } from "../../introspector.ts";
-import { Introspector } from "../../introspector.ts";
-import type { ColumnMetadata } from "../../metadata/column-metadata.ts";
-import { DatabaseMetadata } from "../../metadata/database-metadata.ts";
-import type { TableMetadata } from "../../metadata/table-metadata.ts";
-import type { PostgresDB } from "./postgres-db.ts";
+} from 'kysely';
+import { sql } from 'kysely';
+import { EnumCollection } from '../../enum-collection';
+import type { IntrospectOptions } from '../../introspector';
+import { Introspector } from '../../introspector';
+import type { ColumnMetadata } from '../../metadata/column-metadata';
+import { DatabaseMetadata } from '../../metadata/database-metadata';
+import type { TableMetadata } from '../../metadata/table-metadata';
+import { TableMatcher } from '../../table-matcher';
+import type { PostgresDB } from './postgres-db';
 
-type PostgresDomainInspector = {
+export type PostgresDomainInspector = {
   rootType: string;
   typeName: string;
   typeSchema: string;
 };
 
-type TableReference = {
+export type TableReference = {
   schema?: string;
   name: string;
 };
 
-type PostgresIntrospectorOptions = {
+export type PostgresIntrospectorOptions = {
   defaultSchemas?: string[];
   domains?: boolean;
   partitions?: boolean;
@@ -39,13 +40,13 @@ export class PostgresIntrospector extends Introspector<PostgresDB> {
       defaultSchemas:
         options?.defaultSchemas && options.defaultSchemas.length > 0
           ? options.defaultSchemas
-          : ["public"],
+          : ['public'],
       domains: options?.domains ?? true,
       partitions: options?.partitions,
     };
   }
 
-  #createDatabaseMetadata({
+  createDatabaseMetadata({
     domains,
     enums,
     partitions,
@@ -59,13 +60,11 @@ export class PostgresIntrospector extends Introspector<PostgresDB> {
     const tables = rawTables
       .map((table): TableMetadata => {
         const columns = table.columns.map((column): ColumnMetadata => {
-          const dataType = this.#getRootType(column, domains);
+          const dataType = this.getRootType(column, domains);
           const enumValues = enums.get(
-            `${
-              column.dataTypeSchema ?? this.options.defaultSchemas
-            }.${dataType}`,
+            `${column.dataTypeSchema ?? this.options.defaultSchemas}.${dataType}`,
           );
-          const isArray = dataType.startsWith("_");
+          const isArray = dataType.startsWith('_');
 
           return {
             comment: column.comment ?? null,
@@ -101,7 +100,7 @@ export class PostgresIntrospector extends Introspector<PostgresDB> {
     return new DatabaseMetadata({ enums, tables });
   }
 
-  #getRootType(
+  getRootType(
     column: KyselyColumnMetaData,
     domains: PostgresDomainInspector[],
   ) {
@@ -114,7 +113,27 @@ export class PostgresIntrospector extends Introspector<PostgresDB> {
     return foundDomain?.rootType ?? column.dataType;
   }
 
-  async #introspectDomains(db: Kysely<PostgresDB>) {
+  async introspect(options: IntrospectOptions<PostgresDB>) {
+    const [tables, domains, enums, partitions, materializedViews] =
+      await Promise.all([
+        this.getTables(options),
+        this.introspectDomains(options.db),
+        this.introspectEnums(options.db),
+        this.introspectPartitions(options.db),
+        this.introspectMaterializedViews(options),
+      ]);
+
+    const allTables = [...tables, ...materializedViews];
+
+    return this.createDatabaseMetadata({
+      enums,
+      domains,
+      partitions,
+      tables: allTables,
+    });
+  }
+
+  async introspectDomains(db: Kysely<PostgresDB>) {
     if (!this.options.domains) {
       return [];
     }
@@ -146,22 +165,22 @@ export class PostgresIntrospector extends Introspector<PostgresDB> {
     return result.rows;
   }
 
-  async #introspectEnums(db: Kysely<PostgresDB>) {
+  async introspectEnums(db: Kysely<PostgresDB>) {
     const enums = new EnumCollection();
 
     const rows = await db
       .withoutPlugins()
-      .selectFrom("pg_type as type")
-      .innerJoin("pg_enum as enum", "type.oid", "enum.enumtypid")
+      .selectFrom('pg_type as type')
+      .innerJoin('pg_enum as enum', 'type.oid', 'enum.enumtypid')
       .innerJoin(
-        "pg_catalog.pg_namespace as namespace",
-        "namespace.oid",
-        "type.typnamespace",
+        'pg_catalog.pg_namespace as namespace',
+        'namespace.oid',
+        'type.typnamespace',
       )
       .select([
-        "namespace.nspname as schemaName",
-        "type.typname as enumName",
-        "enum.enumlabel as enumValue",
+        'namespace.nspname as schemaName',
+        'type.typname as enumName',
+        'enum.enumlabel as enumValue',
       ])
       .execute();
 
@@ -172,7 +191,7 @@ export class PostgresIntrospector extends Introspector<PostgresDB> {
     return enums;
   }
 
-  async #introspectPartitions(db: Kysely<PostgresDB>) {
+  async introspectPartitions(db: Kysely<PostgresDB>) {
     const result = await sql<TableReference>`
       select pg_namespace.nspname as schema, pg_class.relname as name
       from pg_inherits
@@ -183,20 +202,94 @@ export class PostgresIntrospector extends Introspector<PostgresDB> {
     return result.rows;
   }
 
-  async introspect(options: IntrospectOptions<PostgresDB>): Promise<DatabaseMetadata> {
-    const tables = await this.getTables(options);
+  async introspectMaterializedViews(
+    options: IntrospectOptions<PostgresDB>,
+  ): Promise<KyselyTableMetadata[]> {
+    const db = options.db;
 
-    const [domains, enums, partitions] = await Promise.all([
-      this.#introspectDomains(options.db),
-      this.#introspectEnums(options.db),
-      this.#introspectPartitions(options.db),
-    ]);
+    const materializedViews = await db.withoutPlugins().executeQuery<{
+      table_schema: string;
+      table_name: string;
+      column_name: string;
+      ordinal_position: number;
+      column_default: string | null;
+      is_nullable: 'YES' | 'NO';
+      data_type: string;
+      udt_schema: string;
+      udt_name: string;
+      column_comment: string | null;
+    }>(
+      sql`
+        select
+          n.nspname as table_schema,
+          c.relname as table_name,
+          a.attname as column_name,
+          a.attnum as ordinal_position,
+          pg_get_expr(ad.adbin, ad.adrelid) as column_default,
+          case when a.attnotnull then 'NO' else 'YES' end as is_nullable,
+          t.typname as data_type,
+          tn.nspname as udt_schema,
+          t.typname as udt_name,
+          col_description(c.oid, a.attnum) as column_comment
+        from pg_class c
+        join pg_namespace n on n.oid = c.relnamespace
+        join pg_attribute a on a.attrelid = c.oid
+        join pg_type t on t.oid = a.atttypid
+        join pg_namespace tn on tn.oid = t.typnamespace
+        left join pg_attrdef ad on ad.adrelid = c.oid and ad.adnum = a.attnum
+        where c.relkind = 'm'
+          and a.attnum > 0
+          and not a.attisdropped
+        order by n.nspname, c.relname, a.attnum;
+      `.compile(db),
+    );
 
-    return this.#createDatabaseMetadata({
-      enums,
-      domains,
-      partitions,
-      tables,
-    });
+    const tableMap = new Map<string, KyselyTableMetadata>();
+
+    for (const row of materializedViews.rows) {
+      const tableKey = `${row.table_schema}.${row.table_name}`;
+
+      let table = tableMap.get(tableKey);
+      if (!table) {
+        table = {
+          name: row.table_name,
+          schema: row.table_schema,
+          isView: true,
+          columns: [],
+        };
+        tableMap.set(tableKey, table);
+      }
+
+      const isAutoIncrementing =
+        row.column_default?.includes('nextval') ?? false;
+
+      table.columns.push({
+        name: row.column_name,
+        dataType: row.udt_name,
+        dataTypeSchema: row.udt_schema,
+        isNullable: row.is_nullable === 'YES',
+        isAutoIncrementing,
+        hasDefaultValue: row.column_default !== null,
+        comment: row.column_comment ?? undefined,
+      });
+    }
+
+    let tables = Array.from(tableMap.values());
+
+    if (options.includePattern) {
+      const tableMatcher = new TableMatcher(options.includePattern);
+      tables = tables.filter(({ name, schema }) =>
+        tableMatcher.match(schema, name),
+      );
+    }
+
+    if (options.excludePattern) {
+      const tableMatcher = new TableMatcher(options.excludePattern);
+      tables = tables.filter(
+        ({ name, schema }) => !tableMatcher.match(schema, name),
+      );
+    }
+
+    return tables;
   }
 }

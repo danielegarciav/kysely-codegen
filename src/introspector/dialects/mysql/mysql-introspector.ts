@@ -1,15 +1,15 @@
-import type { Kysely, TableMetadata as KyselyTableMetadata } from "kysely";
-import { EnumCollection } from "../../enum-collection.ts";
-import type { IntrospectOptions } from "../../introspector.ts";
-import { Introspector } from "../../introspector.ts";
-import { DatabaseMetadata } from "../../metadata/database-metadata.ts";
-import type { MysqlDB } from "./mysql-db.ts";
-import { MysqlParser } from "./mysql-parser.ts";
+import type { Kysely, TableMetadata as KyselyTableMetadata } from 'kysely';
+import { EnumCollection } from '../../enum-collection';
+import type { IntrospectOptions } from '../../introspector';
+import { Introspector } from '../../introspector';
+import { DatabaseMetadata } from '../../metadata/database-metadata';
+import type { MysqlDB } from './mysql-db';
+import { MysqlParser } from './mysql-parser';
 
 const ENUM_REGEXP = /^enum\(.*\)$/;
 
 export class MysqlIntrospector extends Introspector<MysqlDB> {
-  #createDatabaseMetadata({
+  createDatabaseMetadata({
     enums,
     tables: rawTables,
   }: {
@@ -20,21 +20,28 @@ export class MysqlIntrospector extends Introspector<MysqlDB> {
       ...table,
       columns: table.columns.map((column) => ({
         ...column,
-        enumValues: column.dataType === "enum"
-          ? enums.get(`${table.schema ?? ""}.${table.name}.${column.name}`)
-          : null,
+        enumValues:
+          column.dataType === 'enum'
+            ? enums.get(`${table.schema ?? ''}.${table.name}.${column.name}`)
+            : null,
       })),
     }));
     return new DatabaseMetadata({ tables });
   }
 
-  async #introspectEnums(db: Kysely<MysqlDB>) {
+  async introspect(options: IntrospectOptions<MysqlDB>) {
+    const tables = await this.getTables(options);
+    const enums = await this.introspectEnums(options.db);
+    return this.createDatabaseMetadata({ enums, tables });
+  }
+
+  async introspectEnums(db: Kysely<MysqlDB>) {
     const enums = new EnumCollection();
 
     const rows = await db
       .withoutPlugins()
-      .selectFrom("information_schema.COLUMNS")
-      .select(["COLUMN_NAME", "COLUMN_TYPE", "TABLE_NAME", "TABLE_SCHEMA"])
+      .selectFrom('information_schema.COLUMNS')
+      .select(['COLUMN_NAME', 'COLUMN_TYPE', 'TABLE_NAME', 'TABLE_SCHEMA'])
       .execute();
 
     for (const row of rows) {
@@ -47,11 +54,5 @@ export class MysqlIntrospector extends Introspector<MysqlDB> {
     }
 
     return enums;
-  }
-
-  async introspect(options: IntrospectOptions<MysqlDB>): Promise<DatabaseMetadata> {
-    const tables = await this.getTables(options);
-    const enums = await this.#introspectEnums(options.db);
-    return this.#createDatabaseMetadata({ enums, tables });
   }
 }

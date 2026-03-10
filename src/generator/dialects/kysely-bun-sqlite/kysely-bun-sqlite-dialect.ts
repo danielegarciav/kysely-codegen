@@ -1,8 +1,10 @@
-import { SqliteIntrospectorDialect } from "../../../introspector/dialects/sqlite/sqlite-dialect.ts";
-import type { GeneratorDialect } from "../../dialect.ts";
-import { SqliteAdapter } from "../sqlite/sqlite-adapter.ts";
+import { KyselyBunSqliteIntrospectorDialect } from '../../../introspector/dialects/kysely-bun-sqlite/kysely-bun-sqlite-dialect';
+import type { GeneratorDialect } from '../../dialect';
+import { KyselyBunSqliteAdapter } from './kysely-bun-sqlite-adapter';
 
-export class KyselyBunSqliteDialect extends SqliteIntrospectorDialect
-  implements GeneratorDialect {
-  readonly adapter: SqliteAdapter = new SqliteAdapter();
+export class KyselyBunSqliteDialect
+  extends KyselyBunSqliteIntrospectorDialect
+  implements GeneratorDialect
+{
+  readonly adapter = new KyselyBunSqliteAdapter();
 }

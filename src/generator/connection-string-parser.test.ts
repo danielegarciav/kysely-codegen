@@ -1,106 +1,114 @@
-import { deepStrictEqual } from "node:assert";
-import { describe, it } from "vitest";
-import { ConnectionStringParser } from "./connection-string-parser.ts";
+import { deepStrictEqual } from 'node:assert';
+import { ConnectionStringParser } from './connection-string-parser';
 
 describe(ConnectionStringParser.name, () => {
   const parser = new ConnectionStringParser();
 
-  describe("postgres", () => {
-    it("should infer the correct dialect name", () => {
+  describe('postgres', () => {
+    it('should normalize the connection string and infer the correct dialect name', () => {
       deepStrictEqual(
         parser.parse({
-          connectionString: "postgres://username:password@hostname/database",
+          connectionString: 'postgres://username:password@hostname/database',
         }),
         {
-          connectionString: "postgres://username:password@hostname/database",
-          inferredDialectName: "postgres",
+          connectionString: 'postgres://username:password@hostname/database',
+          dialect: 'postgres',
         },
       );
       deepStrictEqual(
         parser.parse({
-          connectionString: "postgresql://username:password@hostname/database",
+          connectionString: 'postgresql://username:password@hostname/database',
         }),
         {
-          connectionString: "postgresql://username:password@hostname/database",
-          inferredDialectName: "postgres",
+          connectionString: 'postgresql://username:password@hostname/database',
+          dialect: 'postgres',
         },
       );
       deepStrictEqual(
         parser.parse({
-          connectionString: "pg://username:password@hostname/database",
+          connectionString: 'pg://username:password@hostname/database',
         }),
         {
-          connectionString: "postgres://username:password@hostname/database",
-          inferredDialectName: "postgres",
-        },
-      );
-    });
-  });
-
-  describe("mysql", () => {
-    it("should infer the correct dialect name", () => {
-      deepStrictEqual(
-        parser.parse({
-          connectionString: "mysql://username:password@hostname/database",
-        }),
-        {
-          connectionString: "mysql://username:password@hostname/database",
-          inferredDialectName: "mysql",
-        },
-      );
-      deepStrictEqual(
-        parser.parse({
-          connectionString: "mysqlx://username:password@hostname/database",
-        }),
-        {
-          connectionString: "mysqlx://username:password@hostname/database",
-          inferredDialectName: "mysql",
+          connectionString: 'postgres://username:password@hostname/database',
+          dialect: 'postgres',
         },
       );
     });
   });
 
-  describe("sqlite", () => {
-    it("should infer the correct dialect name", () => {
+  describe('mysql', () => {
+    it('should infer the correct dialect name', () => {
       deepStrictEqual(
         parser.parse({
-          connectionString: "C:/Program Files/sqlite3/db",
+          connectionString: 'mysql://username:password@hostname/database',
         }),
         {
-          connectionString: "C:/Program Files/sqlite3/db",
-          inferredDialectName: "sqlite",
+          connectionString: 'mysql://username:password@hostname/database',
+          dialect: 'mysql',
         },
       );
       deepStrictEqual(
         parser.parse({
-          connectionString: "/usr/local/bin",
+          connectionString: 'mysqlx://username:password@hostname/database',
         }),
         {
-          connectionString: "/usr/local/bin",
-          inferredDialectName: "sqlite",
+          connectionString: 'mysqlx://username:password@hostname/database',
+          dialect: 'mysql',
         },
       );
     });
   });
 
-  describe("libsql", () => {
-    it("should infer the correct dialect name", () => {
+  describe('sqlite', () => {
+    it('should infer the correct dialect name', () => {
       deepStrictEqual(
         parser.parse({
-          connectionString: "libsql://token@hostname:port/db",
+          connectionString: 'C:/Program Files/sqlite3/db',
         }),
         {
-          connectionString: "libsql://token@hostname:port/db",
-          inferredDialectName: "libsql",
+          connectionString: 'C:/Program Files/sqlite3/db',
+          dialect: 'sqlite',
         },
       );
       deepStrictEqual(
         parser.parse({
-          connectionString: "libsql://hostname:port/db",
+          connectionString: '/usr/local/bin',
         }),
         {
-          connectionString: "libsql://hostname:port/db",
-          inferredDialectName: "libsql",
+          connectionString: '/usr/local/bin',
+          dialect: 'sqlite',
+        },
+      );
+      deepStrictEqual(
+        parser.parse({
+          connectionString: 'sqlite://./path/to/db.sqlite',
+        }),
+        {
+          connectionString: './path/to/db.sqlite',
+          dialect: 'sqlite',
+        },
+      );
+    });
+  });
+
+  describe('libsql', () => {
+    it('should infer the correct dialect name', () => {
+      deepStrictEqual(
+        parser.parse({
+          connectionString: 'libsql://token@hostname:port/db',
+        }),
+        {
+          connectionString: 'libsql://token@hostname:port/db',
+          dialect: 'libsql',
+        },
+      );
+      deepStrictEqual(
+        parser.parse({
+          connectionString: 'libsql://hostname:port/db',
+        }),
+        {
+          connectionString: 'libsql://hostname:port/db',
+          dialect: 'libsql',
         },
       );
     });

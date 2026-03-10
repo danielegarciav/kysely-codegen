@@ -1,8 +1,7 @@
-import type { ExpressionNode } from "./expression-node.ts";
-import { NodeType } from "./node-type.ts";
+import type { ExpressionNode } from './expression-node';
 
 export class MappedTypeNode {
-  readonly type = NodeType.MAPPED_TYPE;
+  readonly type = 'MappedType';
   readonly value: ExpressionNode;
 
   constructor(value: ExpressionNode) {
